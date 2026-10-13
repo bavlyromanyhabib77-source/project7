@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>رحلة نادي كنيسة العدرا – بني أحمد</title>
+<script>
+// ╔══════════════════════════════════════════════════════╗
+// ║   إعدادات الرحلة — غيّر اللي محتاجه هنا بس          ║
+// ║   (غيّر اللي بين العلامتين " " وسيب الباقي زي ما هو) ║
+// ╚══════════════════════════════════════════════════════╝
+window.TRIP_CONFIG = {
+  // ---------- بيانات الرحلة ----------
+  place:   "نادي كنيسة العدرا – بني أحمد",   // مكان التجمع
+  date:    "الأربع ٢١ / ١٠",                    // التاريخ
+  time:    "الساعة ٥ مساءً",                    // ميعاد التحرك
+  price:   80,                                 // الاشتراك بالجنيه (رقم بس)
+  invite: `🤍✨ مش كل الاجتماعات بتتنسى… فيه اجتماعات بتسيب حتة حلوة جوانا! ✨🤍
+تخيّل كده يوم مختلف، ناس بتحبهم، ضحك من القلب، ووقت نسرق فيه نفسنا من زحمة الأيام ونقرب أكتر من ربنا ومن بعض 🫶🏻
+مستنيينكم في اجتماعنا الخارجي في نادي كنيسة العدرا بني أحمد 🌿🤍
+🗓️ الأربع 21/10
+⏰ التحرك الساعة 5 مساءً
+💰 الاشتراك ٨٠ جنيه
+
+وجودك مش مجرد حضور… وجودك هو اللي بيكمّل اللمة! 🫂✨
+مستنيينك، ومتقولش المرة دي: المرة الجاية إن شاء الله 😂❤️
+يلا بينا نعمل ذكريات حلوة سوا! 🔥🤍`,   // نص الدعوة (لو غيّرت السعر غيّره هنا كمان)
+  tagline: "",                                 // جملة صغيرة تحت العنوان الكبير (اختياري)
+
+  // ---------- الدفع (InstaPay) ----------
+  ipa:     "YOURNAME@instapay",                // عنوان InstaPay اللي الناس تحوّل عليه
+  ipaName: "",                                 // اسم صاحب الحساب (اختياري)
+  phone:   "01xxxxxxxxx",                      // رقم التحويل
+
+  // ---------- Supabase (الصق بيانات مشروعك هنا) ----------
+  // مثال: supabase: { url: "https://abcdxyz.supabase.co", anonKey: "eyJ..." },
+  supabase: null,
+
+  // كلمة سر المسؤول للوضع التجريبي بس. في الوضع الحقيقي بتتغير من ملف SQL (admin_pin)
+  demoPin: "5555"
+};
+
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:#0f1b3d;padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:#f5f7fb;padding-bottom:env(safe-area-inset-bottom,0px)}
+#pub{--navy:#0f1b3d;--blue:#2563eb;--violet:#7c3aed;--gold:#f5b942;--bg:#f5f7fb;--ink:#17223b;--mute:#6b778c;--line:#e4e9f2;--ok:#16a34a;--bad:#dc2626}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+#pub{margin:0;font-family:Cairo,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+#pub .hero{position:relative;overflow:hidden;color:#fff;text-align:center;padding:64px 20px clamp(195px,calc(22vw + 10px),340px);
+  background:linear-gradient(120deg,#0f1b3d,#1e3a8a,#5b21b6,#0f1b3d);background-size:300% 300%;animation:flow 14s ease infinite}
+@keyframes flow{50%{background-position:100% 50%}}
+#pub .orb{position:absolute;border-radius:50%;filter:blur(50px);opacity:.35;animation:float 9s ease-in-out infinite}
+#pub .orb.a{width:260px;height:260px;background:#3b82f6;top:-60px;right:-40px}
+#pub .orb.b{width:220px;height:220px;background:#a855f7;bottom:-80px;left:-30px;animation-delay:-4s}
+@keyframes float{50%{transform:translate(20px,-24px) scale(1.08)}}
+#pub .badge{display:inline-block;padding:6px 16px;border:1px solid rgba(255,255,255,.35);border-radius:30px;font-size:14px;letter-spacing:.3px;backdrop-filter:blur(6px);margin-bottom:18px}
+#pub .hero h1{position:relative;margin:0 0 12px;font-size:clamp(28px,6.5vw,48px);font-weight:800;line-height:1.35}
+#pub .hero h1 span{color:var(--gold)}
+#pub .hero p{position:relative;margin:0 auto;max-width:480px;font-size:18px;opacity:.92}
+#pub .cta{position:relative;display:inline-block;margin-top:26px;padding:13px 32px;border-radius:40px;background:var(--gold);color:#3b2a00;font-weight:800;text-decoration:none;box-shadow:0 10px 30px rgba(245,185,66,.4);transition:.25s}
+#pub .cta:hover{transform:translateY(-3px)}
+#pub .wrap{max-width:680px;margin:-10px auto 50px;padding:0 14px;position:relative}
+#pub .card{background:#fff;border-radius:20px;padding:24px;box-shadow:0 10px 35px rgba(15,27,61,.08);margin-bottom:18px}
+#pub .reveal{opacity:0;transform:translateY(24px);transition:.7s cubic-bezier(.2,.7,.2,1)}
+#pub .reveal.in{opacity:1;transform:none}
+#pub .info{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+#pub .info div{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:#f5f8ff}
+#pub .info svg{flex:none;width:34px;height:34px;padding:8px;border-radius:10px;background:var(--blue);color:#fff}
+#pub .info small{display:block;color:var(--mute);font-size:12px}
+#pub .info b{font-size:15px}
+@media(max-width:480px){#pub .info{grid-template-columns:1fr}}
+#pub .seats{display:flex;align-items:center;gap:20px}
+#pub .ring{--p:0;width:92px;height:92px;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--blue) calc(var(--p)*1%),var(--line) 0);transition:.8s}
+#pub .ring i{width:72px;height:72px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:20px}
+#pub .seats h3{margin:0 0 4px}
+#pub #left{color:var(--mute)}
+#pub h2{margin:0 0 6px;font-size:21px}
+#pub .sub{color:var(--mute);margin:0 0 6px;font-size:14px}
+#pub label{display:block;font-weight:600;margin:16px 0 6px;font-size:14px}
+#pub input,#pub textarea{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;font:inherit;background:#fff;transition:.2s}
+#pub input:focus,#pub textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+#pub .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){#pub .row{grid-template-columns:1fr}}
+#pub .seg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+#pub .seg label{margin:0;cursor:pointer}
+#pub .seg input{display:none}
+#pub .seg span{display:block;text-align:center;padding:14px 8px;border:1.5px solid var(--line);border-radius:14px;font-weight:700;transition:.25s}
+#pub .seg input:checked+span{border-color:var(--blue);background:#eef4ff;color:var(--blue);box-shadow:0 6px 18px rgba(37,99,235,.15)}
+#pub .panel{overflow:hidden;max-height:0;opacity:0;transition:.45s}
+#pub .panel.open{max-height:520px;opacity:1}
+#pub .pay{margin-top:14px;padding:16px;border-radius:14px;background:#f5f8ff;border:1px dashed #9db8f5}
+#pub .ipa{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-radius:10px;padding:10px 12px;margin-top:10px;direction:ltr;font-weight:800}
+#pub .ipa button{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:inherit;cursor:pointer}
+#pub .cash{margin-top:14px;padding:14px;border-radius:14px;background:#fff8e6;border:1px solid #f3dc9b;color:#6b4e00;font-weight:600}
+#pub .check{display:flex;gap:10px;align-items:center;margin-top:18px;font-weight:600;cursor:pointer}
+#pub .check input{width:22px;height:22px;accent-color:var(--blue)}
+#pub .btn{width:100%;margin-top:22px;padding:15px;border:0;border-radius:14px;color:#fff;font:inherit;font-size:18px;font-weight:800;cursor:pointer;
+  background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 12px 28px rgba(79,70,229,.3);transition:.25s}
+#pub .btn:hover:not(:disabled){transform:translateY(-2px)}
+#pub .btn:disabled{opacity:.5;cursor:not-allowed}
+#pub .msg{display:none;margin-top:14px;padding:13px;border-radius:12px;font-weight:600}
+#pub .msg.ok{display:block;background:#e8f8ee;color:var(--ok)}
+#pub .msg.err{display:block;background:#fdecec;color:var(--bad)}
+#pub .done{text-align:center;display:none;padding:10px 0}
+#pub .done svg{width:76px;height:76px;color:var(--ok)}
+#pub .done circle{stroke-dasharray:166;stroke-dashoffset:166;animation:draw .7s .1s forwards}
+#pub .done path{stroke-dasharray:48;stroke-dashoffset:48;animation:draw .5s .7s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#pub footer{min-height:70px}
+#pub .scene{position:absolute;bottom:-1px;left:0;width:100%;height:clamp(190px,25vw,320px);pointer-events:none}
+#pub .sun{transform-box:fill-box;transform-origin:center;animation:pulse 4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.18);opacity:.85}}
+#pub .bus{animation:drive 20s linear infinite}
+@keyframes drive{from{transform:translateX(-150px)}to{transform:translateX(950px)}}
+#pub #pub .hero p:empty{display:none}
+#pub #invite{white-space:pre-line;line-height:2.05;font-size:16px;font-weight:600;text-align:center}
+#pub #inviteCard{border-top:5px solid var(--gold)}
+#pub .scene .cross{filter:drop-shadow(0 0 5px rgba(245,185,66,.9))}
+#adm{--navy:#0f1b3d;--blue:#2563eb;--violet:#7c3aed;--bg:#f3f5fa;--ink:#17223b;--mute:#6b778c;--line:#e4e9f2;--ok:#16a34a;--bad:#dc2626;--warn:#d97706}
+*{box-sizing:border-box}
+#adm{margin:0;font-family:Cairo,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+#adm .top{background:linear-gradient(120deg,#0f1b3d,#1e3a8a);color:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
+#adm .top h1{margin:0;font-size:19px}
+#adm .top button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+#adm .wrap{max-width:1000px;margin:0 auto;padding:18px 14px 50px}
+#adm .card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 6px 24px rgba(15,27,61,.07);margin-bottom:16px;animation:up .5s both}
+@keyframes up{from{opacity:0;transform:translateY(16px)}}
+#adm .login{max-width:380px;margin:80px auto}
+#adm label{display:block;font-weight:600;margin:12px 0 6px;font-size:14px}
+#adm input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font:inherit}
+#adm input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+#adm .btn{width:100%;margin-top:16px;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;font:inherit;font-weight:800;cursor:pointer}
+#adm .err{color:var(--bad);margin-top:10px;font-weight:600}
+#adm .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:700px){#adm .stats{grid-template-columns:repeat(2,1fr)}}
+#adm .stat{background:#fff;border-radius:16px;padding:16px;box-shadow:0 6px 24px rgba(15,27,61,.07);border-top:4px solid var(--c);animation:up .5s both}
+#adm .stat small{color:var(--mute);font-weight:600}
+#adm .stat b{display:block;font-size:32px;margin-top:4px}
+#adm .prog{height:10px;border-radius:10px;background:var(--line);overflow:hidden;margin-top:12px}
+#adm .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet));transition:width .8s}
+#adm .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#adm .tools input{flex:1;min-width:160px}
+#adm .tabs{display:flex;gap:6px;flex-wrap:wrap}
+#adm .tab,#adm .sm{border:0;border-radius:10px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;background:var(--line);color:var(--ink);transition:.2s}
+#adm .tab.on{background:var(--blue);color:#fff}
+#adm .sm.red{background:#fdecec;color:var(--bad)}
+#adm .cap{display:flex;gap:8px;align-items:center}
+#adm .cap input{width:90px}
+#adm .scroll{overflow-x:auto}
+#adm table{width:100%;border-collapse:collapse;font-size:14px}
+#adm th{color:var(--mute);font-size:12px;text-align:right;padding:10px 8px;border-bottom:2px solid var(--line)}
+#adm td{padding:11px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+#adm tr.new{animation:flash 2s}
+@keyframes flash{from{background:#dbeafe}}
+#adm .pill{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+#adm .pill.insta{background:#e0ecff;color:var(--blue)}
+#adm .pill.cash{background:#fff3d6;color:var(--warn)}
+#adm .pill.paid{background:#e3f6ea;color:var(--ok)}
+#adm .pill.unpaid{background:#fdecec;color:var(--bad)}
+#adm .toast{position:fixed;bottom:56px;left:50%;transform:translate(-50%,120px);background:var(--navy);color:#fff;padding:14px 22px;border-radius:14px;font-weight:700;transition:.4s;z-index:9}
+#adm .toast.show{transform:translate(-50%,0)}
+#adm .modal{position:fixed;inset:0;background:rgba(10,15,35,.7);display:none;place-items:center;z-index:10;padding:20px}
+#adm .modal.show{display:grid}
+#adm .modal img{max-width:100%;max-height:88vh;border-radius:14px}
+#adm .empty{text-align:center;color:var(--mute);padding:30px}
+#adm .scene{position:absolute;bottom:-1px;left:0;width:100%;height:190px;pointer-events:none}
+#adm .sun{transform-box:fill-box;transform-origin:center;animation:pulse 4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.18);opacity:.85}}
+#adm .bus{animation:drive 20s linear infinite}
+@keyframes drive{from{transform:translateX(-150px)}to{transform:translateX(950px)}}
+#adm .lists{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){#adm .lists{grid-template-columns:1fr}}
+#adm .lists h3{margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+#adm .cnt{background:var(--blue);color:#fff;border-radius:20px;padding:2px 12px;font-size:14px}
+#adm .nm{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+#adm .nm small{display:block;color:var(--mute)}
+</style>
+</head>
+<body>
+<!-- ===== صفحة التسجيل ===== -->
+<div id="pub">
+
+<header class="hero">
+  <div class="orb a"></div><div class="orb b"></div>
+  <div class="badge">رحلة نادي كنيسة العدرا</div>
+  <h1>مستنينك تشاركنا <span>المغامرة</span></h1>
+  <p id="tagline"></p>
+  <a class="cta" href="#reg">سجّل مكانك</a>
+<svg class="scene" viewBox="0 0 800 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<circle class="sun" cx="500" cy="78" r="30" fill="#f5b942"/>
+<path d="M0 130 Q120 80 260 120 T520 110 T800 100 V200 H0Z" fill="#3b4fa8" opacity=".55"/>
+<path d="M0 150 Q160 110 320 145 T640 135 T800 140 V200 H0Z" fill="#26367f" opacity=".8"/>
+<g transform="translate(300 92)">
+ <rect x="0" y="30" width="86" height="58" fill="#eef2ff"/>
+ <path d="M-6 32 L43 6 L92 32Z" fill="#c7d2fe"/>
+ <rect x="30" y="-18" width="26" height="40" fill="#e0e7ff"/>
+ <path d="M28 -18 L43 -36 L58 -18Z" fill="#a5b4fc"/>
+ <path class="cross" d="M43 -70 V-34 M30 -56 H56" stroke="#f5b942" stroke-width="5.5" stroke-linecap="round"/>
+ <path d="M34 88 V62 a9 9 0 0 1 18 0 V88Z" fill="#26367f"/>
+ <circle cx="43" cy="-2" r="5" fill="#26367f"/>
+ <rect x="10" y="46" width="12" height="18" rx="6" fill="#26367f"/><rect x="64" y="46" width="12" height="18" rx="6" fill="#26367f"/>
+</g>
+<path d="M0 178 Q200 160 400 176 T800 170 V200 H0Z" fill="#f5f7fb"/>
+<g fill="#1e8f5a"><circle cx="230" cy="158" r="13"/><circle cx="262" cy="162" r="10"/><circle cx="420" cy="160" r="12"/><circle cx="452" cy="164" r="9"/><circle cx="560" cy="156" r="13"/></g>
+<rect x="0" y="182" width="800" height="12" fill="#2b3558"/>
+<path d="M0 188 H800" stroke="#f5f7fb" stroke-width="2" stroke-dasharray="14 12" opacity=".7"/>
+<g class="bus"><g transform="translate(0 152)">
+ <rect width="76" height="32" rx="7" fill="#f5b942"/>
+ <g fill="#eaf1ff"><rect x="7" y="6" width="12" height="11" rx="2"/><rect x="23" y="6" width="12" height="11" rx="2"/><rect x="39" y="6" width="12" height="11" rx="2"/><rect x="56" y="6" width="14" height="14" rx="2"/></g>
+ <circle cx="18" cy="33" r="6.5" fill="#1c2733"/><circle cx="58" cy="33" r="6.5" fill="#1c2733"/>
+</g></g>
+<rect x="0" y="194" width="800" height="6" fill="#f5f7fb"/>
+</svg>
+</header>
+
+<main class="wrap">
+  <section class="card reveal" id="inviteCard"><div id="invite"></div></section>
+
+  <section class="card reveal">
+    <div class="info">
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span><small>مكان التجمع</small><b data-cfg="place"></b></span></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span><small>التاريخ</small><b data-cfg="date"></b></span></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><small>ميعاد التحرك</small><b data-cfg="time"></b></span></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="13" rx="3"/><circle cx="12" cy="12.5" r="2.5"/></svg><span><small>الاشتراك</small><b data-cfg="priceText"></b></span></div>
+    </div>
+  </section>
+
+  <section class="card reveal" id="reg">
+    <form id="form">
+      <h2>بيانات التسجيل</h2>
+      <p class="sub">دقيقة واحدة وتبقى معانا.</p>
+      <label>الاسم بالكامل</label>
+      <input id="name" required placeholder="اكتب اسمك الثلاثي">
+      <label>رقم الموبايل</label><input id="phone" type="tel" required pattern="01[0-9]{9}" placeholder="01xxxxxxxxx" dir="ltr">
+      <label>إيه اللي نفسك يبقى موجود في اليوم؟ <span style="color:var(--mute);font-weight:400">(اختياري)</span></label>
+      <textarea id="notes" rows="3" placeholder="اكتب أي حاجة نفسك فيها"></textarea>
+
+      <label>طريقة دفع الاشتراك (<span data-cfg="priceText"></span>)</label>
+      <div class="seg">
+        <label><input type="radio" name="method" value="instapay" checked><span>InstaPay</span></label>
+        <label><input type="radio" name="method" value="cash"><span>نقدًا (هدفع بعدين)</span></label>
+      </div>
+
+      <div class="panel open" id="pInsta">
+        <div class="pay">
+          حوّل <b data-cfg="priceText"></b> على العنوان ده:
+          <div class="ipa"><span id="ipa"></span><button type="button" id="copy">نسخ</button></div>
+          <div class="sub" id="ipaName" style="margin-top:6px"></div>
+          <div class="sub" style="margin-top:8px">أو على رقم: <b dir="ltr" id="ph">01xxxxxxxxx</b></div>
+          <label>رقم العملية</label>
+          <input id="txn" dir="ltr" placeholder="مثال: 123456789012">
+          <label>أو ارفع صورة الإيصال</label>
+          <input id="receipt" type="file" accept="image/*">
+        </div>
+      </div>
+      <div class="panel" id="pCash">
+        <div class="cash">تمام، مكانك اتسجل. هتدفع الاشتراك (<span data-cfg="priceText"></span>) نقدًا للمسؤول قبل يوم الرحلة أو عند التجمع.</div>
+      </div>
+
+      <label class="check"><input type="checkbox" id="confirm" required> أؤكد حضوري في الرحلة</label>
+      <button class="btn" id="submit">تأكيد التسجيل</button>
+      <div class="msg" id="msg"></div>
+    </form>
+    <div class="done" id="done">
+      <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><circle cx="30" cy="30" r="26"/><path d="M19 31l8 8 15-17"/></svg>
+      <h2>تم تسجيلك بنجاح</h2>
+      <p class="sub" id="doneTxt"></p>
+      <button type="button" class="btn" id="again" style="width:auto;margin-top:14px;padding:10px 22px;font-size:15px;background:#eef4ff;color:#2563eb;box-shadow:none">تسجيل شخص آخر</button>
+    </div>
+  </section>
+  <footer aria-hidden="true"></footer>
+</main>
+
+</div>
+<!-- ===== لوحة المسؤول (افتحها من الرابط أسفل الصفحة أو #admin) ===== -->
+<div id="adm" style="display:none"><div style="text-align:center;padding:12px"><a href="#" data-route="pub" style="color:#6b778c;font-size:13px;text-decoration:none">رجوع لصفحة التسجيل</a></div>
+
+<div class="card login" id="login">
+  <h2 style="margin-top:0">دخول المسؤول</h2>
+  <label>البريد الإلكتروني</label><input id="em" type="email" dir="ltr">
+  <label>كلمة السر</label><input id="pw" type="password" dir="ltr">
+  <button class="btn" id="go">دخول</button>
+  <div class="err" id="lerr"></div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="top"><h1>لوحة متابعة الرحلة</h1><button id="out">تسجيل الخروج</button></div>
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat" style="--c:#2563eb"><small>إجمالي المسجلين</small><b id="sTotal">0</b></div>
+      <div class="stat" style="--c:#7c3aed"><small>دفعوا InstaPay</small><b id="sInsta">0</b></div>
+      <div class="stat" style="--c:#d97706"><small>هيدفعوا نقدًا</small><b id="sCash">0</b></div>
+      <div class="stat" style="--c:#16a34a"><small>تم استلام دفعهم</small><b id="sPaid">0</b></div>
+    </div>
+    <div class="card" style="padding:14px 20px"><b>المتحصّل:</b> <span id="money">0</span> جنيه من <span id="expected">0</span> جنيه متوقع</div>
+    <div class="lists">
+      <div class="card"><h3>دفعوا InstaPay <span class="cnt" id="nInsta">0</span></h3><div id="lInsta"></div></div>
+      <div class="card"><h3>هيدفعوا نقدًا <span class="cnt" id="nCash">0</span></h3><div id="lCash"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="tools">
+        <input id="q" placeholder="ابحث بالاسم أو الموبايل">
+        <div class="tabs" id="tabs">
+          <button class="tab on" data-f="all">الكل</button>
+          <button class="tab" data-f="instapay">InstaPay</button>
+          <button class="tab" data-f="cash">نقدي</button>
+          <button class="tab" data-f="unpaid">لسه ما دفعش</button>
+        </div>
+        <button class="sm" id="csv">تصدير CSV</button>
+      </div>
+      <div class="scroll" style="margin-top:12px">
+        <table>
+          <thead><tr><th>#</th><th>الاسم</th><th>الموبايل</th><th>نفسه في إيه</th><th>الدفع</th><th>رقم العملية / إيصال</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" style="display:none">مفيش نتائج</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><img id="mimg"></div>
+
+</div>
+<script>
+// طبقة البيانات: بتربط صفحة التسجيل بصفحة المسؤول (Firebase أو وضع تجريبي)
+(function () {
+  const C = window.TRIP_CONFIG;
+  const FB = !!(C.supabase && C.supabase.url && C.supabase.anonKey && !/YOUR_|xxxx/.test(C.supabase.url + C.supabase.anonKey));
+  const T = { mode: FB ? "live" : "demo" };
+
+  if (!FB) {
+    // ---------- وضع تجريبي (البيانات في المتصفح ده بس) ----------
+    const mem = {}, st = (() => { try { localStorage.setItem("_t", "1"); localStorage.removeItem("_t"); return localStorage; }
+      catch { return { getItem: k => mem[k] ?? null, setItem: (k, v) => { mem[k] = String(v); }, removeItem: k => { delete mem[k]; } }; } })();
+    const ls = (k, d) => { try { const v = JSON.parse(st.getItem(k)); return v == null ? d : v; } catch { return d; } };
+    const sv = (k, v) => { st.setItem(k, JSON.stringify(v)); dispatchEvent(new Event("storage")); };
+    const watch = (read, cb) => {
+      let last; const f = () => { const v = read(), s = JSON.stringify(v); if (s !== last) { last = s; cb(v); } };
+      f(); addEventListener("storage", f); const i = setInterval(f, 1000);
+      return () => { removeEventListener("storage", f); clearInterval(i); };
+    };
+    const authCbs = [], isAdmin = () => !!st.getItem("trip_admin"), fire = () => authCbs.forEach(f => f(isAdmin()));
+    T.onRegs = cb => watch(() => ls("trip_regs", []), cb);
+    T.register = async d => {
+      const r = ls("trip_regs", []);
+      r.unshift({ ...d, id: "r" + Date.now() + Math.random().toString(36).slice(2, 6), paid: false, createdAt: Date.now() });
+      sv("trip_regs", r);
+    };
+    T.setPaid = async (id, v) => sv("trip_regs", ls("trip_regs", []).map(r => r.id === id ? { ...r, paid: v } : r));
+    T.remove = async id => sv("trip_regs", ls("trip_regs", []).filter(r => r.id !== id));
+    T.login = async (e, p) => { if (p !== C.demoPin) throw 0; st.setItem("trip_admin", "1"); fire(); };
+    T.logout = async () => { st.removeItem("trip_admin"); fire(); };
+    T.getReceipt = async id => (ls("trip_regs", []).find(r => r.id === id) || {}).receipt || "";
+    T.onAuth = cb => { authCbs.push(cb); cb(isAdmin()); };
+
+  } else {
+    // ---------- وضع حقيقي: Supabase (REST) ----------
+    const U = C.supabase.url.replace(/\/$/, ""), K = C.supabase.anonKey;
+    const H = { apikey: K, "Content-Type": "application/json" };
+    if (K.startsWith("eyJ")) H.Authorization = "Bearer " + K;
+    const rest = async (path, body, extra) => {
+      const r = await fetch(U + "/rest/v1/" + path, { method: "POST", headers: { ...H, ...(extra || {}) }, body: JSON.stringify(body) });
+      const t = await r.text(); if (!r.ok) throw new Error(t || r.status);
+      return t ? JSON.parse(t) : null;
+    };
+    const rpc = (fn, args) => rest("rpc/" + fn, args);
+    let PIN = null; try { PIN = sessionStorage.getItem("trip_pin"); } catch {}
+    const authCbs = [], fire = () => authCbs.forEach(f => f(!!PIN));
+    let pollNow = () => {};
+
+    T.register = async d => rest("registrations", { name: d.name, phone: d.phone, notes: d.notes || "", method: d.method,
+      txn: d.txn || "", receipt: d.receipt || "", attending: true }, { Prefer: "return=minimal" });
+    T.onRegs = cb => {
+      let last, dead = false;
+      const f = async () => { try {
+        const rows = (await rpc("admin_list", { pin: PIN })).map(r => ({ ...r, receipt: r.has_receipt ? "__remote__" : "" }));
+        const s = JSON.stringify(rows); if (!dead && s !== last) { last = s; cb(rows); }
+      } catch {} };
+      pollNow = f; f(); const i = setInterval(f, 3000);
+      return () => { dead = true; clearInterval(i); };
+    };
+    T.setPaid = async (id, v) => { await rpc("admin_set_paid", { pin: PIN, rid: id, val: v }); pollNow(); };
+    T.remove = async id => { await rpc("admin_delete", { pin: PIN, rid: id }); pollNow(); };
+    T.getReceipt = id => rpc("admin_receipt", { pin: PIN, rid: id });
+    T.login = async (e, p) => {
+      if (!(await rpc("admin_check", { pin: p }))) throw 0;
+      PIN = p; try { sessionStorage.setItem("trip_pin", p); } catch {} fire();
+    };
+    T.logout = async () => { PIN = null; try { sessionStorage.removeItem("trip_pin"); } catch {} fire(); };
+    T.onAuth = cb => { authCbs.push(cb); cb(!!PIN); };
+  }
+  window.Trip = T;
+})();
+
+</script>
+<script>
+(function () {
+  const C = TRIP_CONFIG, $ = id => document.getElementById(id);
+  const ar = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+  const vals = { place: C.place, date: C.date, time: C.time, priceText: ar(C.price) + " جنيه" };
+  document.querySelectorAll("[data-cfg]").forEach(e => e.textContent = vals[e.dataset.cfg]);
+  $("tagline").textContent = C.tagline || "";
+  $("invite").textContent = C.invite || ""; $("inviteCard").style.display = C.invite ? "" : "none";
+  $("ipa").textContent = C.ipa; $("ph").textContent = C.phone;
+  $("ipaName").textContent = C.ipaName ? "اسم الحساب: " + C.ipaName : "";
+
+  const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("in")), { threshold: .12 });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+
+  document.querySelectorAll("[name=method]").forEach(r => r.addEventListener("change", () => {
+    const cash = document.querySelector("[name=method]:checked").value === "cash";
+    $("pInsta").classList.toggle("open", !cash); $("pCash").classList.toggle("open", cash);
+  }));
+  $("copy").onclick = () => { navigator.clipboard.writeText($("ipa").textContent); $("copy").textContent = "تم"; setTimeout(() => $("copy").textContent = "نسخ", 1500); };
+
+  const shrink = file => new Promise(res => {
+    const img = new Image(), r = new FileReader(); r.onload = () => img.src = r.result;
+    img.onload = () => { const k = Math.min(1, 900 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = img.width * k; c.height = img.height * k; c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .6)); };
+    r.readAsDataURL(file);
+  });
+  $("again").onclick = () => { $("form").reset(); $("form").style.display = ""; $("done").style.display = "none"; $("submit").disabled = false; $("msg").className = "msg"; scrollTo(0, 0); };
+  const say = (t, ok) => { $("msg").className = "msg " + (ok ? "ok" : "err"); $("msg").textContent = t; };
+
+  $("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const method = document.querySelector("[name=method]:checked").value;
+    const txn = $("txn").value.trim(), file = $("receipt").files[0];
+    if (method === "instapay" && !txn && !file) return say("اكتب رقم العملية أو ارفع صورة الإيصال", false);
+    $("submit").disabled = true;
+    try {
+      const receipt = method === "instapay" && file ? await shrink(file) : "";
+      await Trip.register({ name: $("name").value.trim(), phone: $("phone").value.trim(),
+        notes: $("notes").value.trim(), method, txn: method === "instapay" ? txn : "", receipt, attending: true });
+      $("form").style.display = "none"; $("done").style.display = "block";
+      $("doneTxt").textContent = method === "cash"
+        ? "مكانك محجوز. هتدفع " + ar(C.price) + " جنيه نقدًا للمسؤول، ومستنينك يوم " + C.date + "."
+        : "هنراجع التحويل ونأكد معاك. مستنينك يوم " + C.date + ".";
+    } catch (err) {
+      say(err.message === "FULL" ? "الأماكن خلصت" : "حصل خطأ، جرب تاني", false); $("submit").disabled = false;
+    }
+  });
+})();
+
+</script>
+<script>
+(function () {
+  const C = TRIP_CONFIG, PRICE = C.price, $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let rows = [], filter = "all", known = null, newIds = new Set(), unsubs = [];
+
+  $("go").onclick = async () => { try { await Trip.login($("em").value, $("pw").value); } catch { $("lerr").textContent = "البريد أو كلمة السر غلط"; } };
+  $("out").onclick = () => Trip.logout();
+  $("pw").addEventListener("keydown", e => e.key === "Enter" && $("go").click());
+
+  Trip.onAuth(ok => {
+    $("login").style.display = ok ? "none" : "block"; $("app").style.display = ok ? "block" : "none";
+    unsubs.forEach(f => f()); unsubs = []; known = null;
+    if (!ok) return;
+    unsubs.push(Trip.onRegs(list => {
+      rows = list;
+      if (known) list.filter(r => !known.has(r.id)).forEach(r => { newIds.add(r.id); alertNew(r.name); });
+      known = new Set(list.map(r => r.id)); draw();
+    }));
+  });
+
+  function countTo(el, n) { const a = +el.textContent || 0, t = performance.now();
+    (function f(now) { const k = Math.min(1, (now - t) / 600); el.textContent = Math.round(a + (n - a) * k); if (k < 1) requestAnimationFrame(f); })(t); }
+
+  const names = arr => arr.length ? arr.map(r => `<div class="nm"><span><b>${esc(r.name)}</b><small dir="ltr">${esc(r.phone)}</small></span>
+    <span class="pill ${r.paid ? "paid" : "unpaid"}">${r.paid ? "تم الدفع" : "لم يدفع"}</span></div>`).join("")
+    : '<div style="color:#6b778c;padding:6px 0">لسه مفيش حد</div>';
+
+  function draw() {
+    const insta = rows.filter(r => r.method !== "cash"), cash = rows.filter(r => r.method === "cash"), paid = rows.filter(r => r.paid).length;
+    countTo($("sTotal"), rows.length); countTo($("sInsta"), insta.length); countTo($("sCash"), cash.length); countTo($("sPaid"), paid);
+    $("nInsta").textContent = insta.length; $("nCash").textContent = cash.length;
+    $("lInsta").innerHTML = names(insta); $("lCash").innerHTML = names(cash);
+    $("money").textContent = paid * PRICE; $("expected").textContent = rows.length * PRICE;
+
+    const q = $("q").value.trim();
+    const list = rows.filter(r => {
+      if (filter === "instapay" && r.method === "cash") return false;
+      if (filter === "cash" && r.method !== "cash") return false;
+      if (filter === "unpaid" && r.paid) return false;
+      return !q || (r.name || "").includes(q) || (r.phone || "").includes(q);
+    });
+    $("empty").style.display = list.length ? "none" : "block";
+    $("rows").innerHTML = list.map(r => `<tr class="${newIds.has(r.id) ? "new" : ""}">
+      <td>${rows.length - rows.indexOf(r)}</td><td><b>${esc(r.name)}</b></td><td dir="ltr">${esc(r.phone)}</td>
+      <td style="white-space:normal;min-width:150px">${esc(r.notes)}</td>
+      <td><span class="pill ${r.method === "cash" ? "cash" : "insta"}">${r.method === "cash" ? "نقدي" : "InstaPay"}</span></td>
+      <td>${esc(r.txn)} ${r.receipt ? `<button class="sm" data-img="${r.id}">عرض الإيصال</button>` : ""}</td>
+      <td><button class="pill ${r.paid ? "paid" : "unpaid"}" style="border:0;cursor:pointer" data-pay="${r.id}">${r.paid ? "تم الدفع" : "لم يدفع"}</button></td>
+      <td><button class="sm red" data-del="${r.id}">حذف</button></td></tr>`).join("");
+    setTimeout(() => newIds.clear(), 2200);
+  }
+
+  document.addEventListener("click", async e => {
+    const t = e.target, f = t.dataset;
+    if (f.f) { filter = f.f; document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b === t)); draw(); }
+    if (f.pay) { const r = rows.find(x => x.id === f.pay); Trip.setPaid(r.id, !r.paid); }
+    if (f.img) { const r = rows.find(x => x.id === f.img); $("mimg").removeAttribute("src"); $("modal").classList.add("show");
+      $("mimg").src = (r.receipt && r.receipt !== "__remote__") ? r.receipt : await Trip.getReceipt(r.id); }
+    if (f.del && confirm("متأكد من حذف التسجيل؟")) Trip.remove(f.del);
+  });
+  $("modal").onclick = () => $("modal").classList.remove("show");
+  $("q").oninput = draw;
+
+  function alertNew(name) {
+    $("toast").textContent = "تسجيل جديد: " + name; $("toast").classList.add("show"); setTimeout(() => $("toast").classList.remove("show"), 3500);
+    try { const c = new AudioContext(), o = c.createOscillator(); o.connect(c.destination); o.frequency.value = 880; o.start(); o.stop(c.currentTime + .2); } catch {}
+  }
+  $("csv").onclick = () => {
+    const h = "الاسم,الموبايل,أمنيته للرحلة,طريقة الدفع,رقم العملية,تم الدفع\n";
+    const b = rows.map(r => [r.name, r.phone, r.notes, r.method === "cash" ? "نقدي" : "InstaPay", r.txn, r.paid ? "نعم" : "لا"]
+      .map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + h + b], { type: "text/csv" })); a.download = "trip.csv"; a.click();
+  };
+})();
+
+</script>
+<script>
+(function(){const pub=document.getElementById("pub"),adm=document.getElementById("adm");
+function go(w){const a=w==="adm";pub.style.display=a?"none":"";adm.style.display=a?"":"none";scrollTo(0,0)}
+document.addEventListener("click",e=>{const r=e.target.closest("[data-route]");if(r){e.preventDefault();go(r.dataset.route)}});
+addEventListener("hashchange",()=>go(location.hash==="#admin"?"adm":"pub"));
+if(location.hash==="#admin")go("adm");
+let taps=0,tt;const ft=document.querySelector("#pub footer");if(ft)ft.addEventListener("click",()=>{taps++;clearTimeout(tt);tt=setTimeout(()=>taps=0,2000);if(taps>=5){taps=0;go("adm")}})})();
+</script>
+</body>
+</html>
